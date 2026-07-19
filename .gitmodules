@@ -1,0 +1,3 @@
+[submodule "external/collections-library"]
+	path = external/collections-library
+	url = git@github.com:SuperCodersOrg/ds_library-Pratham.git
