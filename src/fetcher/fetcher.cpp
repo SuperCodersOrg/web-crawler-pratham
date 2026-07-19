@@ -23,5 +23,37 @@ void Fetcher::setRequestDelay(int seconds){
     }
 }
 
+std::string Fetcher::fetch(const std::string& url){
+    std::this_thread::sleep_for(std::chrono::seconds(requestDelay));
+    CURL* curl = curl_easy_init();
+    if (curl == nullptr){
+        return "";
+    }
+    std::string html;
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &html);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+
+    curl_easy_setopt(curl,CURLOPT_USERAGENT,"WebCrawler/1.0");
+
+    CURLcode result = curl_easy_perform(curl);
+
+    curl_easy_getinfo(curl,CURLINFO_RESPONSE_CODE,&httpStatusCode);
+    curl_easy_cleanup(curl);
+    if (result != CURLE_OK){
+        return "";
+    }
+    if (httpStatusCode != 200){
+        return "";
+    }
+
+    if (html.empty()){
+        return "";
+    }
+    return html;
+}
 
 
