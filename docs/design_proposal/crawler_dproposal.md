@@ -306,7 +306,6 @@ Each insertion requires a lookup first, but the overhead is minimal due to hash-
 ---
 
 ### Page Storage
-### Page Storage
 
 #### Purpose
 
@@ -460,30 +459,36 @@ The crawler must update both the webpage file and the metadata file whenever a n
 
 
 ### Link Extractor
+
 #### Purpose
 The Link Extractor identifies and extracts hyperlinks from the HTML content of a downloaded webpage. After a webpage is fetched, its HTML is passed to the Link Extractor, which scans the document for hyperlink references and returns the extracted URLs.
+
 The extracted URLs are then forwarded to the URL Normalizer before being checked against the Seen URL Store and inserted into the Frontier.
-Since the number of hyperlinks in a webpage is unknown beforehand, the extracted URLs are stored using the custom `DynamicArray` developed in Project 01.
+
+Since the number of hyperlinks in a webpage is unknown beforehand, the extracted URLs are stored using the custom `DynamicArray` developed in Project 01. The `DynamicArray` exists only during the extraction process and is returned to the caller after extraction completes.
 
 ---
+
 #### Public API
+
 ```cpp
 class LinkExtractor{
 public:
     DynamicArray<std::string>
     extractLinks(const std::string& html);
-    int linkCount() const;
-    void clear();
 };
 ```
 ---
+
 #### Internal Representation
-The Link Extractor is a temporary processing component. During extraction, it stores the discovered hyperlinks in:
+The Link Extractor is a **stateless processing component**. It does not maintain any internal state between webpages.
+During the execution of `extractLinks()`, the discovered hyperlinks are temporarily stored in a local:
 ```cpp
 DynamicArray<std::string> extractedLinks;
 ```
 Each element represents one extracted hyperlink.
-The collection exists only during the extraction process and is cleared after the extracted URLs are returned.
+Once extraction is complete, the `DynamicArray` is returned to the caller, and no hyperlinks are retained by the Link Extractor.
+
 ---
 
 #### Memory Diagram
@@ -492,19 +497,18 @@ The collection exists only during the extraction process and is cleared after th
 ---
 
 #### Complexity Analysis
+
 | Method | Complexity | Explanation |
 |---------|------------|-------------|
 | `extractLinks()` | O(n) | Scans the HTML document once and extracts hyperlinks. |
-| `linkCount()` | O(1) | Returns the number of extracted hyperlinks. |
-| `clear()` | O(k) | Removes all extracted hyperlinks. |
-
 where
-- **n** is the length of the HTML document.
-- **k** is the number of extracted hyperlinks.
 
+- **n** is the length of the HTML document.
 ---
+
 #### Design Decisions
 ##### Decision 1: Use DynamicArray to Store Extracted Links
+
 **Decision Taken**
 The extracted hyperlinks are temporarily stored using the custom `DynamicArray`.
 
@@ -512,27 +516,30 @@ The extracted hyperlinks are temporarily stored using the custom `DynamicArray`.
 Use a `LinkedList`.
 
 **Reason for Acceptance / Rejection**
-Hyperlinks are generated sequentially while scanning the HTML document. A DynamicArray provides efficient append operations and simple sequential traversal before the URLs are normalized.
+Hyperlinks are generated sequentially while scanning the HTML document. A `DynamicArray` provides efficient append operations and simple sequential traversal before the URLs are normalized.
 
 **Trade-offs**
-Occasional resizing may introduce temporary overhead, but the DynamicArray provides better cache locality and simpler iteration than a linked list.
+Occasional resizing may introduce temporary overhead, but the `DynamicArray` provides better cache locality and simpler iteration than a linked list.
 
 ---
+
 ##### Decision 2: Keep the Link Extractor Stateless
 **Decision Taken**
-The Link Extractor stores hyperlinks only during extraction.
+The Link Extractor does not maintain any internal state. During `extractLinks()`, hyperlinks are stored only in a local `DynamicArray`, which is returned to the caller after extraction completes.
 
 **Alternative Considered**
-Maintain extracted hyperlinks across multiple webpages.
+Maintain extracted hyperlinks as member data across multiple webpages.
 
 **Reason for Acceptance / Rejection**
-Each webpage is processed independently. Retaining hyperlinks after extraction provides no benefit and unnecessarily increases memory usage.
+Each webpage is processed independently. Retaining hyperlinks after extraction provides no benefit, increases memory usage, and unnecessarily couples one extraction with the next.
 
 **Trade-offs**
-Extracted hyperlinks are unavailable after extraction unless another component stores them, which is acceptable because permanent storage is not the Link Extractor's responsibility.
+The Link Extractor cannot provide access to previously extracted hyperlinks after the function returns. This is acceptable because permanent storage is the responsibility of other crawler components.
 
 ---
+
 ##### Decision 3: Separate Link Extraction from URL Normalization
+
 **Decision Taken**
 The Link Extractor returns hyperlinks exactly as they appear in the HTML document.
 
@@ -544,9 +551,11 @@ Keeping extraction and normalization separate makes each component easier to und
 
 **Trade-offs**
 An additional processing step is introduced, but the architecture remains modular and easier to extend.
+
 ---
 
 ##### Decision 4: Restrict the Link Extractor to Hyperlink Extraction
+
 **Decision Taken**
 The Link Extractor is responsible only for extracting hyperlinks.
 
