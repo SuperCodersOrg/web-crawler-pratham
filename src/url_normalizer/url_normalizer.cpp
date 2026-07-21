@@ -57,6 +57,35 @@ std::string URLNormalizer::normalize(const std::string& url) const
         }
     }
 
-    
+    // Remove an empty query string, e.g. "...path?" -> "...path"
+    if (!normalizedUrl.empty() && normalizedUrl.back() == '?')
+    {
+        normalizedUrl.pop_back();
+    }
+
+    // Recompute authority end after the mutation above
+    schemeEnd = normalizedUrl.find("://");
+    if (schemeEnd != std::string::npos)
+    {
+        std::size_t authorityStart = schemeEnd + 3;
+        std::size_t authorityEnd =
+            normalizedUrl.find_first_of("/?", authorityStart);
+        if (authorityEnd == std::string::npos)
+        {
+            authorityEnd = normalizedUrl.length();
+        }
+
+        bool hasQuery =
+            normalizedUrl.find('?', authorityEnd) != std::string::npos;
+
+        // Strip a redundant trailing '/' from the path, but only if
+        // there's no query string after it, and it isn't the sole
+        // "root" slash right after the host (keep http://x.com/ as-is).
+        if (!hasQuery && !normalizedUrl.empty() && normalizedUrl.back() == '/' && normalizedUrl.length() - 1 != authorityEnd){
+            normalizedUrl.pop_back();
+        }
+    }
+
+    return normalizedUrl;
     
 }
