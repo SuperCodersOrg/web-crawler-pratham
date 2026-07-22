@@ -99,3 +99,22 @@ int PageStorage::pageCount() const{
     return nextPageID - 1;
 }
 
+//
+void PageStorage::clear(){
+    try{
+    std::filesystem::remove_all(storageLocation);
+    std::filesystem::create_directories(storageLocation);
+    }
+    catch(const std::filesystem::filesystem_error& e){
+        throw std::runtime_error(e.what());
+    }
+
+    urlToPageID.clear();
+
+    pages.clear();
+
+    PageInfo dummyPage;
+    pages.push(dummyPage);
+
+    nextPageID = 1;
+}
