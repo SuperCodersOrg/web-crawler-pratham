@@ -57,3 +57,45 @@ std::string PageStorage::readPage(const PageInfo& pageInfo) const{
     return html;
 }
 
+//store page
+void PageStorage::storePage(const std::string& url,const std::string& html,int depth){
+    if (hasPage(url)){
+        return;
+    }
+    PageInfo pageInfo;
+    pageInfo.url = url;
+    pageInfo.depth = depth;
+    pageInfo.storageKey = generateStorageKey(nextPageID);
+    writePage(pageInfo, html);
+    urlToPageID.insert(url, nextPageID);
+    pages.push(pageInfo);
+    nextPageID++;
+}
+
+// get page
+std::string PageStorage::getPage(const std::string& url) const{
+    if (!hasPage(url)){
+        throw std::runtime_error("Page not found.");
+    }
+    int pageID = urlToPageID.get(url);
+    return readPage(pages[pageID]);
+}
+
+//has page
+bool PageStorage::hasPage(const std::string& url) const{
+    return urlToPageID.contains(url);
+}
+
+//url by id
+std::string PageStorage::getURLByID(int pageID) const{
+    if (pageID <= 0 || pageID >= nextPageID){
+        throw std::out_of_range("Invalid Page ID.");
+    }
+    return pages[pageID].url;
+}
+
+//pagecount 
+int PageStorage::pageCount() const{
+    return nextPageID - 1;
+}
+
