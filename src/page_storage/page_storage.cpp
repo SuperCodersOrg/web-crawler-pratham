@@ -32,3 +32,28 @@ void PageStorage::writePage(const PageInfo& pageInfo,const std::string& html) co
     outFile.close();
 }
 
+//read
+std::string PageStorage::readPage(const PageInfo& pageInfo) const{
+    std::ifstream inFile(storageLocation + "/" + pageInfo.storageKey);
+    if (!inFile){
+        throw std::runtime_error("Unable to open page file.");
+    }
+
+    std::string line;
+    std::string html;
+    // Skip metadata
+    while (std::getline(inFile, line)){
+        if (line == "-----HTML-----"){
+            break;
+        }
+    }
+
+    // Read HTML content
+    while (std::getline(inFile, line)){
+        html+=line+'\n';
+    }
+    inFile.close();
+
+    return html;
+}
+
