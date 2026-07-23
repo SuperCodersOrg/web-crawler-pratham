@@ -21,7 +21,7 @@ void Crawler::crawl(const std::string& seedUrl){
 
 
         std::string normalizedURL =
-            urlNormalizer.normalize(current.url);
+            urlNormalizer.normalize(current.url,current.url);
 
         // 
         std::cout << "Normalized URL: "
@@ -77,19 +77,18 @@ void Crawler::crawl(const std::string& seedUrl){
 
         for (int i = 0; i < links.size(); i++){
             std::string normalizedLink =
-                urlNormalizer.normalize(links[i]);
+                urlNormalizer.normalize(links[i],normalizedURL);
 
+            if (normalizedLink.empty()){
+                continue;
+            }
 
-                std::cout << "Found -> "
-          << normalizedLink
-          << std::endl;
+            std::cout << "Found -> "
+                    << normalizedLink
+                    << std::endl;
 
-            if (!seenStore.contains(normalizedLink)
-                && current.depth + 1 <= maxDepth){
-                frontier.enqueue(
-                    normalizedLink,
-                    current.depth + 1
-                );
+            if (!seenStore.contains(normalizedLink) && current.depth + 1 <= maxDepth){
+                frontier.enqueue(normalizedLink,current.depth + 1);
                 std::cout << "Queued\n";
             }
         }
