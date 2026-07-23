@@ -28,22 +28,18 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 # --------------------------------------------------
-# Include Directories
-# --------------------------------------------------
-
-include_directories(
-    include
-    external/collections-library/include
-)
-
-# --------------------------------------------------
 # Source Files
 # --------------------------------------------------
 
 set(SOURCES
-
+    src/crawler/crawler.cpp
     src/fetcher/fetcher.cpp
-
+    src/url_normalizer/url_normalizer.cpp
+    src/frontier/frontier.cpp
+    src/page_storage/page_storage.cpp
+    src/link_extractor/link_extractor.cpp
+    src/seen_store/seen_store.cpp
+    
 )
 
 # --------------------------------------------------
@@ -58,6 +54,18 @@ add_executable(webcrawler
 target_link_libraries(webcrawler
     CURL::libcurl
 )
+
+# --------------------------------------------------
+# Include Directories
+# --------------------------------------------------
+target_include_directories(webcrawler PRIVATE
+    include
+    external/collections-library/include
+)
+
+
+
+
 
 # --------------------------------------------------
 # Tests
