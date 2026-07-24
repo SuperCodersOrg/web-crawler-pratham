@@ -49,9 +49,21 @@ std::string PageStorage::readPage(const PageInfo& pageInfo) const{
     }
 
     // Read HTML content
-    while (std::getline(inFile, line)){
-        html+=line+'\n';
-    }
+    // while (std::getline(inFile, line)){
+    //     html+=line+'\n';
+    // }
+
+    //error
+// /mnt/n/cq/Project 2/web-crawler-pratham/tests/page_storage/page_storage_tests.cpp:37: Failure
+// Expected equality of these values:
+//   retrievedHtml
+//     Which is: "<html><body>Hello</body></html>\n"
+//   expectedHtml
+//     Which is: "<html><body>Hello</body></html>"
+
+    std::ostringstream ss;
+    ss << inFile.rdbuf();
+    html = ss.str();
     inFile.close();
 
     return html;

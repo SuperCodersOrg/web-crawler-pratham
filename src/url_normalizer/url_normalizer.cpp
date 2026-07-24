@@ -8,7 +8,7 @@ std::string URLNormalizer::resolveRelativeURL(
     const std::string& baseURL) const
 {
     // Absolute URL
-    if (url.find("://") != std::string::npos)
+    if (url.find("://") != std::string::npos || isFilteredScheme(url))
     {
         return url;
     }
@@ -48,14 +48,14 @@ std::string URLNormalizer::resolveRelativeURL(
             resolvedURL.erase(lastSlash + 1);
         }
 
-        // Find the root of the website (https://example.com/)
+        // Find the root of the website (https://quotes.toscrape.com/)
         std::size_t schemeEnd = resolvedURL.find("://");
         std::size_t authorityStart = schemeEnd + 3;
         std::size_t authorityEnd =resolvedURL.find('/', authorityStart);
         if (authorityEnd == std::string::npos){
             authorityEnd = resolvedURL.length();
         }
-        // Length of "https://example.com/"
+        // Length of "https://quotes.toscrape.com/"
         std::size_t rootLength = authorityEnd + 1;
         std::size_t position = 0;
         while (url.compare(position, 3, "../") == 0){
